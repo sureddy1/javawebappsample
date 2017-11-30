@@ -21,28 +21,9 @@ node {
   
   stage('WarUnzip') {
     echo 'Unzipping war file'
-    powershell '''$username = "$ustxappinit"
-    $password = "qjuXjiSm1Jad0DTbgjQYxwqx2sM0hHZuiDhzjtlE1nZwYZRsMcgAihZP6th0"
-    $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $username, $password)))
-
-    $apiUrl = "https://ustxappinit.scm.azurewebsites.net/api/command"
-    $commandBody = @{
-      command = "rm -fr D:/home/site/wwwroot/webapps/ROOT \\\\"
-      dir = "site\\\\wwwroot\\\\webapps"
-    }
-
-    Invoke-RestMethod -Uri $apiUrl -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -Method POST -ContentType "application/json" -Body (ConvertTo-Json $commandBody) | Out-Null
-
-
-    $commandBodyUnzip = @{
-      command = "unzip ROOT.war -d ROOT \\\\"
-      dir = "site\\\\wwwroot\\\\webapps"
-    }
-
-    Invoke-RestMethod -Uri $apiUrl -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -Method POST -ContentType "application/json" -Body (ConvertTo-Json $commandBodyUnzip) | Out-Null
-    '''
-  
-  }
+    sh 'curl -vX -u "\\$ustxappinit:qjuXjiSm1Jad0DTbgjQYxwqx2sM0hHZuiDhzjtlE1nZwYZRsMcgAihZP6th0" POST https://ustxappinit.scm.azurewebsites.net/api/command -d \'{ "command" = "rm -fr D:/home/site/wwwroot/webapps/ROOT" --header "Content-Type: application/json"'
+    sh 'curl -vX -u "\\$ustxappinit:qjuXjiSm1Jad0DTbgjQYxwqx2sM0hHZuiDhzjtlE1nZwYZRsMcgAihZP6th0" POST https://ustxappinit.scm.azurewebsites.net/api/command -d \'{ "command" = "unzip D:/home/site/wwwroot/webapps/ROOT.war -d D:/home/site/wwwroot/webapps/ROOT" --header "Content-Type: application/json"'
+ }
   
   stage('start') {
     echo 'Starting Web App'
