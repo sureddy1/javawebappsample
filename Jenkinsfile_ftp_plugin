@@ -16,7 +16,7 @@ node {
   stage('deploy') {
     sh 'mv target/*.war target/ROOT.war'
     azureWebAppPublish appName: 'ustxappinit', azureCredentialsId: '236035db-5b15-4363-ba7c-09362d42ef4a', filePath: '*.war', publishType: 'file', resourceGroup: 'deleterg', sourceDirectory: 'target', targetDirectory: 'webapps'
-    azureWebAppPublish appName: 'ustxappinit', azureCredentialsId: '236035db-5b15-4363-ba7c-09362d42ef4a', filePath: '*.cmd', publishType: 'file', resourceGroup: 'deleterg', sourceDirectory: 'target', targetDirectory: 'webapps'
+    azureWebAppPublish appName: 'ustxappinit', azureCredentialsId: '236035db-5b15-4363-ba7c-09362d42ef4a', filePath: '*.cmd', publishType: 'file', resourceGroup: 'deleterg', sourceDirectory: '.', targetDirectory: 'webapps'
   }
   
   stage('start') {
