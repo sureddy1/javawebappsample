@@ -7,12 +7,22 @@ node {
     sh 'mvn clean package'
   }
   
-  stage('deploy') {
-    def resourceGroup = '<myResourceGroup>'
-    def webAppName = '<myAppName>'
-    sh 'mv target/*.war target/ROOT.war'
-    azureWebAppPublish azureCredentialsId: '<mySp>', publishType: 'file',
-                       resourceGroup: resourceGroup, appName: webAppName,
-                       filePath: '*.war', sourceDirectory: 'target', targetDirectory: 'webapps'
+  stage('stop')
+  {
+    echo 'Stopping Web App'
+    azureCLI commands: [[exportVariablesString: '', script: 'az webapp stop --name ustxappinit --resource-group deleterg']], principalCredentialId: '236035db-5b15-4363-ba7c-09362d42ef4a'
   }
+  
+  stage('deploy') {
+    sh 'mv target/*.war target/ROOT.war'
+    azureWebAppPublish appName: 'ustxappinit', azureCredentialsId: '236035db-5b15-4363-ba7c-09362d42ef4a', filePath: '*.war', publishType: 'file', resourceGroup: 'deleterg', sourceDirectory: 'target', targetDirectory: 'webapps'
+    azureWebAppPublish appName: 'ustxappinit', azureCredentialsId: '236035db-5b15-4363-ba7c-09362d42ef4a', filePath: '*.cmd', publishType: 'file', resourceGroup: 'deleterg', sourceDirectory: 'target', targetDirectory: 'webapps'
+  }
+  
+  stage('start') {
+    echo 'Starting Web App'
+    azureCLI commands: [[exportVariablesString: '', script: 'az webapp start --name ustxappinit --resource-group deleterg']], principalCredentialId: '236035db-5b15-4363-ba7c-09362d42ef4a'
+  }
+  
+  
 }
