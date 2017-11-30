@@ -19,6 +19,31 @@ node {
     azureWebAppPublish appName: 'ustxappinit', azureCredentialsId: '236035db-5b15-4363-ba7c-09362d42ef4a', filePath: '*.cmd', publishType: 'file', resourceGroup: 'deleterg', sourceDirectory: '.', targetDirectory: 'webapps'
   }
   
+  stage('WarUnzip') {
+    echo 'Unzipping war file'
+    powershell '''$username = "$ustxappinit"
+    $password = "qjuXjiSm1Jad0DTbgjQYxwqx2sM0hHZuiDhzjtlE1nZwYZRsMcgAihZP6th0"
+    $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $username, $password)))
+
+    $apiUrl = "https://ustxappinit.scm.azurewebsites.net/api/command"
+    $commandBody = @{
+      command = "rm -fr D:/home/site/wwwroot/webapps/ROOT \\\\"
+      dir = "site\\\\wwwroot\\\\webapps"
+    }
+
+    Invoke-RestMethod -Uri $apiUrl -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -Method POST -ContentType "application/json" -Body (ConvertTo-Json $commandBody) | Out-Null
+
+
+    $commandBodyUnzip = @{
+      command = "unzip ROOT.war -d ROOT \\\\"
+      dir = "site\\\\wwwroot\\\\webapps"
+    }
+
+    Invoke-RestMethod -Uri $apiUrl -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -Method POST -ContentType "application/json" -Body (ConvertTo-Json $commandBodyUnzip) | Out-Null
+    '''
+  
+  }
+  
   stage('start') {
     echo 'Starting Web App'
     azureCLI commands: [[exportVariablesString: '', script: 'az webapp start --name ustxappinit --resource-group deleterg']], principalCredentialId: '236035db-5b15-4363-ba7c-09362d42ef4a'
