@@ -21,8 +21,8 @@ node {
   
   stage('WarUnzip') {
     echo 'Unzipping war file'
-    sh 'curl -vX -u "\\$ustxappinit:qjuXjiSm1Jad0DTbgjQYxwqx2sM0hHZuiDhzjtlE1nZwYZRsMcgAihZP6th0" POST https://ustxappinit.scm.azurewebsites.net/api/command -d \'{ "command" = "rm -fr D:/home/site/wwwroot/webapps/ROOT" --header "Content-Type: application/json"'
-    sh 'curl -vX -u "\\$ustxappinit:qjuXjiSm1Jad0DTbgjQYxwqx2sM0hHZuiDhzjtlE1nZwYZRsMcgAihZP6th0" POST https://ustxappinit.scm.azurewebsites.net/api/command -d \'{ "command" = "unzip D:/home/site/wwwroot/webapps/ROOT.war -d D:/home/site/wwwroot/webapps/ROOT" --header "Content-Type: application/json"'
+    sh 'curl -vX -u "\\$ustxappinit:qjuXjiSm1Jad0DTbgjQYxwqx2sM0hHZuiDhzjtlE1nZwYZRsMcgAihZP6th0" POST https://ustxappinit.scm.azurewebsites.net/api/command -d \'{ "command" = "rm -fr D:/home/site/wwwroot/webapps/ROOT" }\' --header "Content-Type: application/json"'
+    sh 'curl -vX -u "\\$ustxappinit:qjuXjiSm1Jad0DTbgjQYxwqx2sM0hHZuiDhzjtlE1nZwYZRsMcgAihZP6th0" POST https://ustxappinit.scm.azurewebsites.net/api/command -d \'{ "command" = "unzip D:/home/site/wwwroot/webapps/ROOT.war -d D:/home/site/wwwroot/webapps/ROOT"}\' --header "Content-Type: application/json"'
  }
   
   stage('start') {
