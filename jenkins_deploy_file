@@ -53,8 +53,8 @@ node {
   
   stage('WarUnzip') {
     echo 'Unzipping war file'
-    sh "curl -H 'Content-Type: application/json' -u \\\\'$ftpProfile.username':'$ftpProfile.password' -X POST -d \'{'command':'rm -fr D:\\\\home\\\\site\\\\wwwroot\\\\webapps\\\\ROOT','dir':'site\\\\wwwroot\\\\webapps'}\'  https://ustxappinit.scm.azurewebsites.net/api/command"
-    sh "curl -H 'Content-Type: application/json' -u \\\\'$ftpProfile.username':'$ftpProfile.password' -X POST -d \'{'command':'unzip ROOT.war -d ROOT','dir':'site\\\\wwwroot\\\\webapps'}\'  https://ustxappinit.scm.azurewebsites.net/api/command"
+    sh "curl -H 'Content-Type: application/json' -u \'$ftpProfile.username':'$ftpProfile.password' -X POST -d \'{\'command\':\'rm -fr D:\\\\home\\\\site\\\\wwwroot\\\\webapps\\\\ROOT\',\'dir\':\'site\\\\wwwroot\\\\webapps\'}\'  https://ustxappinit.scm.azurewebsites.net/api/command"
+    sh "curl -H 'Content-Type: application/json' -u \'$ftpProfile.username':'$ftpProfile.password' -X POST -d \'{\'command\':\'unzip ROOT.war -d ROOT\',\'dir\':\'site\\\\wwwroot\\\\webapps\'}\'  https://ustxappinit.scm.azurewebsites.net/api/command"
   }
   
   stage('start') {
