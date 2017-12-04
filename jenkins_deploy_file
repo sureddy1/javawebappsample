@@ -70,7 +70,7 @@ node {
   }
   
     stage('ScaleUp'){
-  echo 'Scaling down app service plan'
+  echo 'Scaling Up app service plan'
   azureCLI commands: [[exportVariablesString: '', script: "az appservice plan update --name $appServicePlan --resource-group $resourceGroup --number-of-workers 4 --sku S1"]], principalCredentialId: '236035db-5b15-4363-ba7c-09362d42ef4a'
   }
   
