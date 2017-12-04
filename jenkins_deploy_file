@@ -14,23 +14,6 @@ node {
      def webAppName = 'ustxappinit'
      def ftpProfile
      
-   stage('Preparation') { // for display purposes
-   
-    
-     withCredentials([azureServicePrincipal('236035db-5b15-4363-ba7c-09362d42ef4a')]) {
-      sh '''
-        az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET -t $AZURE_TENANT_ID
-        az account set -s $AZURE_SUBSCRIPTION_ID
-      '''
-    }
-    
-    def pubProfilesJson = sh script: "az webapp deployment list-publishing-profiles -g $resourceGroup -n $webAppName", returnStdout: true
-    ftpProfile = getFtpPublishProfile pubProfilesJson
-    
-    echo "$ftpProfile.username"
-    echo "$ftpProfile.password"
-   }
-   
    stage('init') {
     checkout scm
   }
@@ -52,9 +35,25 @@ node {
   }
   
   stage('WarUnzip') {
+  
+  withCredentials([azureServicePrincipal('236035db-5b15-4363-ba7c-09362d42ef4a')]) {
+      sh '''
+        az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET -t $AZURE_TENANT_ID
+        az account set -s $AZURE_SUBSCRIPTION_ID
+      '''
+    }
+    
+    def pubProfilesJson = sh script: "az webapp deployment list-publishing-profiles -g $resourceGroup -n $webAppName", returnStdout: true
+    ftpProfile = getFtpPublishProfile pubProfilesJson
+    
+    echo "$ftpProfile.username"
+    echo "$ftpProfile.password"
+    
     echo 'Unzipping war file'
-    sh 'echo \\\\\\\"$ftpProfile.username\\\\\\\"'
-    sh 'echo \\\\\\\"$ftpProfile.password\\\\\\\"'
+    sh 'echo \"${ftpProfile.username}\"'
+    sh 'echo \"${ftpProfile.password}\"'
+    sh "echo \"${ftpProfile.username}\""
+    sh "echo \"${ftpProfile.password}\""
     
     sh 'curl -H "Content-Type: application/json" -u \\"$ftpProfile.username\\":\\"${ftpProfile.password}\\" -X POST -d \'{"command":"rm -fr D:\\\\home\\\\site\\\\wwwroot\\\\webapps\\\\ROOT","dir":"site\\\\wwwroot\\\\webapps"}\'  https://ustxappinit.scm.azurewebsites.net/api/command'
     sh 'curl -H "Content-Type: application/json" -u \\"$ftpProfile.username\\":\\"$ftpProfile.password\\" -X POST -d \'{"command":"unzip ROOT.war -d ROOT","dir":"site\\\\wwwroot\\\\webapps"}\'  https://ustxappinit.scm.azurewebsites.net/api/command'
