@@ -1,0 +1,59 @@
+import groovy.json.JsonSlurper
+
+def getFtpPublishProfile(def publishProfilesJson) {
+  def pubProfiles = new JsonSlurper().parseText(publishProfilesJson)
+  for (p in pubProfiles)
+    if (p['publishMethod'] == 'MSDeploy')
+      return [url: p.publishUrl, username: p.userName, password: p.userPWD]
+}
+
+
+node {
+    
+     def resourceGroup = 'deleterg'
+     def webAppName = 'ustxappinit'
+     def ftpProfile
+     
+   stage('Preparation') { // for display purposes
+   
+    
+     withCredentials([azureServicePrincipal('236035db-5b15-4363-ba7c-09362d42ef4a')]) {
+      sh '''
+        az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET -t $AZURE_TENANT_ID
+        az account set -s $AZURE_SUBSCRIPTION_ID
+      '''
+    }
+    
+    def pubProfilesJson = sh script: "az webapp deployment list-publishing-profiles -g $resourceGroup -n $webAppName", returnStdout: true
+    ftpProfile = getFtpPublishProfile pubProfilesJson
+    
+    echo "$ftpProfile.username"
+    echo "$ftpProfile.password"
+   }
+   
+   
+   stage('stop')
+  {
+    echo 'Stopping Web App'
+    azureCLI commands: [[exportVariablesString: '', script: "az webapp stop --name $webAppName --resource-group $resourceGroup"]], principalCredentialId: '236035db-5b15-4363-ba7c-09362d42ef4a'
+  }
+  
+  stage('deploy') {
+    sh 'mv target/*.war target/ROOT.war'
+    azureWebAppPublish appName: '$webAppName', azureCredentialsId: '236035db-5b15-4363-ba7c-09362d42ef4a', filePath: '*.war', publishType: 'file', resourceGroup: '$resourceGroup', sourceDirectory: 'target', targetDirectory: 'webapps'
+    azureWebAppPublish appName: '$webAppName', azureCredentialsId: '236035db-5b15-4363-ba7c-09362d42ef4a', filePath: '*.cmd', publishType: 'file', resourceGroup: '$resourceGroup', sourceDirectory: '.', targetDirectory: 'webapps'
+  }
+  
+  stage('WarUnzip') {
+    echo 'Unzipping war file'
+    sh 'curl -H "Content-Type: application/json" -u "'$ftpProfile.username':'$ftpProfile.password'" -X POST -d \'{"command":"rm -fr D:\\\\home\\\\site\\\\wwwroot\\\\webapps\\\\ROOT","dir":"site\\\\wwwroot\\\\webapps"}\'  https://ustxappinit.scm.azurewebsites.net/api/command'
+    sh 'curl -H "Content-Type: application/json" -u "\\$ustxappinit:qjuXjiSm1Jad0DTbgjQYxwqx2sM0hHZuiDhzjtlE1nZwYZRsMcgAihZP6th0" -X POST -d \'{"command":"unzip ROOT.war -d ROOT","dir":"site\\\\wwwroot\\\\webapps"}\'  https://ustxappinit.scm.azurewebsites.net/api/command'
+  }
+  
+  stage('start') {
+    echo 'Starting Web App'
+    azureCLI commands: [[exportVariablesString: '', script: 'az webapp start --name ustxappinit --resource-group deleterg']], principalCredentialId: '236035db-5b15-4363-ba7c-09362d42ef4a'
+  }
+  
+  
+}
