@@ -13,6 +13,7 @@ node {
      def resourceGroup = 'deleterg'
      def webAppName = 'ustxappinit'
      def ftpProfile
+     def appServicePlan = 'deleteasp'
      
    stage('init') {
     checkout scm
@@ -20,6 +21,11 @@ node {
   
   stage('build') {
     sh 'mvn clean package'
+  }
+  
+  stage('ScaleDown'){
+  echo 'Scaling down app service plan'
+  azureCLI commands: [[exportVariablesString: '', script: "az appservice plan update --name $appServicePlan --resource-group $resourceGroup --number-of-workers 1 --sku S1"]], principalCredentialId: '236035db-5b15-4363-ba7c-09362d42ef4a'
   }
    
    stage('stop')
@@ -61,6 +67,11 @@ node {
   stage('start') {
     echo 'Starting Web App'
     azureCLI commands: [[exportVariablesString: '', script: "az webapp start --name $webAppName --resource-group $resourceGroup"]], principalCredentialId: '236035db-5b15-4363-ba7c-09362d42ef4a'
+  }
+  
+    stage('ScaleUp'){
+  echo 'Scaling down app service plan'
+  azureCLI commands: [[exportVariablesString: '', script: "az appservice plan update --name $appServicePlan --resource-group $resourceGroup --number-of-workers 4 --sku S1"]], principalCredentialId: '236035db-5b15-4363-ba7c-09362d42ef4a'
   }
   
   
